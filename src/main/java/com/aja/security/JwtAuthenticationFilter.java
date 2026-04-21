@@ -36,30 +36,30 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         final String jwt;
         final String username;
 
-        // ❌ No token → continue
+        
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
             filterChain.doFilter(request, response);
             return;
         }
 
-        // ✅ Extract token
+       
         jwt = authHeader.substring(7);
 
         try {
-            // ✅ Extract username safely
+           
             username = jwtUtil.extractUsername(jwt);
         } catch (Exception e) {
-            // ❌ Invalid token → skip authentication
+            
             filterChain.doFilter(request, response);
             return;
         }
 
-        // ✅ Authenticate only if not already authenticated
+        
         if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
 
             UserDetails userDetails = userDetailsService.loadUserByUsername(username);
 
-            // 🔒 Validate token with username (IMPORTANT FIX)
+            
             if (jwtUtil.validateToken(jwt, userDetails.getUsername())) {
 
                 UsernamePasswordAuthenticationToken authToken =

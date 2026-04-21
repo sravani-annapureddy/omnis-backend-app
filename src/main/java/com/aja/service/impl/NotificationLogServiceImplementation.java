@@ -1,5 +1,6 @@
 package com.aja.service.impl;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 import org.springframework.stereotype.Service;
@@ -13,6 +14,14 @@ import com.aja.service.NotificationLogService;
 public class NotificationLogServiceImplementation implements NotificationLogService {
 	
 	private NotificationLogRepository NotificationLogRepo;
+	private SmsServiceImplementation smsServiceImpl;
+
+	public NotificationLogServiceImplementation(NotificationLogRepository notificationLogRepo,
+			SmsServiceImplementation smsServiceImpl) {
+		super();
+		NotificationLogRepo = notificationLogRepo;
+		smsServiceImpl = smsServiceImpl;
+	}
 
 	@Override
 	public NotificationLog createLog(NotificationLogRequestDto dto) {
@@ -20,7 +29,17 @@ public class NotificationLogServiceImplementation implements NotificationLogServ
 		log.setUserId(dto.getUserId());
 		log.setType(dto.getType());
 		log.setMessage(dto.getMessage());
-		log.setStatus(dto.getStatus()==null? "PENDING":dto.getStatus());
+		log.setSentAt(LocalDateTime.now());
+		
+		try {
+			if("SMS".equalsIgnoreCase(dto.getType())) {
+				String phone="+918106893303";
+				smsServiceImpl.sendSms(phone,dto.getMessage());
+			}
+			log.setStatus("SENT");
+		}catch(Exception e) {
+			log.setStatus("FAILED");
+		}
 		return NotificationLogRepo.save(log);
 	}
 
