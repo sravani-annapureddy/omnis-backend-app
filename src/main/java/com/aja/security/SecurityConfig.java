@@ -41,6 +41,7 @@ public class SecurityConfig {
                         "/swagger-ui.html"
                 ).permitAll()
                 .requestMatchers("/sms/**").permitAll()
+                .requestMatchers("/email/**").permitAll()
                 .requestMatchers("/products/create", "/products/**").hasRole("ADMIN")
                 .requestMatchers("/payments/**", "/orders/**").hasAnyRole("ADMIN", "USER")
                 .requestMatchers("/carts/**").hasRole("USER")

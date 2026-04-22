@@ -15,12 +15,15 @@ public class NotificationLogServiceImplementation implements NotificationLogServ
 	
 	private NotificationLogRepository NotificationLogRepo;
 	private SmsServiceImplementation smsServiceImpl;
+	private EmailServiceImplementation emailServiceImpl;
+
 
 	public NotificationLogServiceImplementation(NotificationLogRepository notificationLogRepo,
-			SmsServiceImplementation smsServiceImpl) {
+			SmsServiceImplementation smsServiceImpl, EmailServiceImplementation emailServiceImpl) {
 		super();
 		NotificationLogRepo = notificationLogRepo;
-		smsServiceImpl = smsServiceImpl;
+		this.smsServiceImpl = smsServiceImpl;
+		this.emailServiceImpl = emailServiceImpl;
 	}
 
 	@Override
@@ -36,6 +39,11 @@ public class NotificationLogServiceImplementation implements NotificationLogServ
 				String phone="+918106893303";
 				smsServiceImpl.sendSms(phone,dto.getMessage());
 			}
+			if("EMAIL".equalsIgnoreCase(dto.getType())) {
+				String email="annapureddysravani22@gmail.com";
+				emailServiceImpl.sendEmail(email, "Notification", dto.getMessage());
+			}
+			
 			log.setStatus("SENT");
 		}catch(Exception e) {
 			log.setStatus("FAILED");
