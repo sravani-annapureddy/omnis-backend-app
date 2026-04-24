@@ -1,3 +1,89 @@
+//package com.aja.security;
+//
+//import org.springframework.context.annotation.Bean;
+//import org.springframework.context.annotation.Configuration;
+//import org.springframework.security.authentication.AuthenticationManager;
+//import org.springframework.security.authentication.AuthenticationProvider;
+//import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
+//import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
+//import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+//import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+//import org.springframework.security.config.http.SessionCreationPolicy;
+//import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+//import org.springframework.security.crypto.password.PasswordEncoder;
+//import org.springframework.security.web.SecurityFilterChain;
+//import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+//
+//
+//@Configuration
+//@EnableWebSecurity
+//public class SecurityConfig {
+//
+//    private final CustomUserDetailsServiceImplementation userDetailsService;
+//    private final JwtAuthenticationFilter jwtAuthenticationFilter;
+//
+//    public SecurityConfig(CustomUserDetailsServiceImplementation userDetailsService,
+//                          JwtAuthenticationFilter jwtAuthenticationFilter) {
+//        this.userDetailsService = userDetailsService;
+//        this.jwtAuthenticationFilter = jwtAuthenticationFilter;
+//    }
+//
+//    @Bean
+//    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+//        http
+//            .csrf(csrf -> csrf.disable())
+//            .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+//            .authorizeHttpRequests(auth -> auth
+//                .requestMatchers("/auth/**", "/user/create").permitAll()
+//                .requestMatchers(
+//                        "/swagger-ui/**",
+//                        "/v3/api-docs/**",
+//                        "/swagger-ui.html"
+//                ).permitAll()
+//                .requestMatchers("/**").permitAll()
+////                .requestMatchers("/payment-gateway/**").permitAll()
+////                .requestMatchers("/payment-gateway/verify").permitAll()
+//                .requestMatchers("/payment-gateway/**").permitAll()
+//                .requestMatchers("/calls/**").permitAll()
+//                .requestMatchers("/ws/**", "/topic/**", "/app/**").permitAll()
+//                .requestMatchers("/sms/**").permitAll()
+//                .requestMatchers("/email/**").permitAll()
+//                .requestMatchers("/products/create", "/products/**").hasRole("ADMIN")
+//                .requestMatchers("/payments/**", "/orders/**").hasAnyRole("ADMIN", "USER")
+//                .requestMatchers("/carts/**").hasRole("USER")
+//                .anyRequest().authenticated()
+//            )
+//            // Use the bean method directly
+//            .authenticationProvider(authenticationProvider())
+//            .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+//
+//        return http.build();
+//    }
+//
+//    @Bean
+//    public AuthenticationProvider authenticationProvider() {
+//        // FIX: If the no-args constructor shows 'undefined', 
+//        // manually verify your import is: 
+//        DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
+//        provider.setUserDetailsService(userDetailsService);
+//        provider.setPasswordEncoder(passwordEncoder());
+//        return provider;
+//    }
+//    
+//    @Bean
+//    public PasswordEncoder passwordEncoder() {
+//        return new BCryptPasswordEncoder();
+//    }
+//
+//    @Bean
+//    public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
+//        return config.getAuthenticationManager();
+//    }
+//}
+
+
+
+
 package com.aja.security;
 
 import org.springframework.context.annotation.Bean;
@@ -13,7 +99,6 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-
 
 @Configuration
 @EnableWebSecurity
@@ -34,23 +119,32 @@ public class SecurityConfig {
             .csrf(csrf -> csrf.disable())
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/auth/**", "/user/create").permitAll()
+
+                // PUBLIC APIs
                 .requestMatchers(
-                        "/swagger-ui/**",
-                        "/v3/api-docs/**",
-                        "/swagger-ui.html"
+                    "/auth/**",
+                    "/user/create",
+                    "/swagger-ui/**",
+                    "/v3/api-docs/**",
+                    "/swagger-ui.html",
+                    "/payment-gateway/**",
+                    "/calls/**",
+                    "/ws/**",
+                    "/topic/**",
+                    "/app/**",
+                    "/sms/**",
+                    "/email/**"
                 ).permitAll()
-//                .requestMatchers("/payment-gateway/**").permitAll()
-//                .requestMatchers("/payment-gateway/verify").permitAll()
-                .requestMatchers("/payment-gateway/**").permitAll()
-                .requestMatchers("/sms/**").permitAll()
-                .requestMatchers("/email/**").permitAll()
-                .requestMatchers("/products/create", "/products/**").hasRole("ADMIN")
-                .requestMatchers("/payments/**", "/orders/**").hasAnyRole("ADMIN", "USER")
+
+                // ROLE BASED APIs
+                .requestMatchers("/products/create").hasRole("ADMIN")
+                .requestMatchers("/products/**").authenticated()
+                .requestMatchers("/payments/**", "/orders/**").authenticated()
                 .requestMatchers("/carts/**").hasRole("USER")
+
+                // ALL OTHER REQUESTS
                 .anyRequest().authenticated()
             )
-            // Use the bean method directly
             .authenticationProvider(authenticationProvider())
             .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
@@ -59,14 +153,12 @@ public class SecurityConfig {
 
     @Bean
     public AuthenticationProvider authenticationProvider() {
-        // FIX: If the no-args constructor shows 'undefined', 
-        // manually verify your import is: 
         DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
         provider.setUserDetailsService(userDetailsService);
         provider.setPasswordEncoder(passwordEncoder());
         return provider;
     }
-    
+
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
