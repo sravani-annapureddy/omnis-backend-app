@@ -32,34 +32,41 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                                    FilterChain filterChain)
             throws ServletException, IOException {
 
-        final String authHeader = request.getHeader("Authorization");
-        final String jwt;
-        final String username;
+        String path = request.getRequestURI();
 
-        
+        // ✅ BYPASS public endpoints (VERY IMPORTANT)
+        if (path.startsWith("/auth") ||
+            path.startsWith("/payment-gateway") ||
+            path.startsWith("/swagger-ui") ||
+            path.startsWith("/v3/api-docs")) {
+
+            filterChain.doFilter(request, response);
+            return;
+        }
+
+        final String authHeader = request.getHeader("Authorization");
+
+        // ✅ If no token → just continue (DO NOT BLOCK)
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
             filterChain.doFilter(request, response);
             return;
         }
 
-       
-        jwt = authHeader.substring(7);
+        String jwt = authHeader.substring(7);
+        String username = null;
 
         try {
-           
             username = jwtUtil.extractUsername(jwt);
         } catch (Exception e) {
-            
+            // ❌ Invalid token → skip authentication
             filterChain.doFilter(request, response);
             return;
         }
 
-        
         if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
 
             UserDetails userDetails = userDetailsService.loadUserByUsername(username);
 
-            
             if (jwtUtil.validateToken(jwt, userDetails.getUsername())) {
 
                 UsernamePasswordAuthenticationToken authToken =
@@ -77,7 +84,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             }
         }
 
-        // ✅ Continue filter chain
         filterChain.doFilter(request, response);
     }
 }

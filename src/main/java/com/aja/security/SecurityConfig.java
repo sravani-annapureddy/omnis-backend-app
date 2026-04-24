@@ -40,6 +40,9 @@ public class SecurityConfig {
                         "/v3/api-docs/**",
                         "/swagger-ui.html"
                 ).permitAll()
+//                .requestMatchers("/payment-gateway/**").permitAll()
+//                .requestMatchers("/payment-gateway/verify").permitAll()
+                .requestMatchers("/payment-gateway/**").permitAll()
                 .requestMatchers("/sms/**").permitAll()
                 .requestMatchers("/email/**").permitAll()
                 .requestMatchers("/products/create", "/products/**").hasRole("ADMIN")
